@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 import models, schemas, crud
 from database import SessionLocal, engine
+from fastapi.responses import HTMLResponse
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -44,3 +45,18 @@ def delete(todo_id: int, db: Session = Depends(get_db)):
 @app.put("/todos/{todo_id}")
 def update(todo_id: int, db: Session = Depends(get_db)):
     return crud.update_todo(db, todo_id)
+
+@app.get("/ui", response_class=HTMLResponse)
+def ui():
+    return """
+    <html>
+    <body>
+        <h2>Todo App</h2>
+        /todos/
+            Title: <input type="text" name="title"><br><br>
+            Description: <input type="text" name="description"><br><br>
+            <button type="submit">Add Todo</button>
+        </form>
+    </body>
+    </html>
+    """
