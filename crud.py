@@ -35,3 +35,15 @@ def update_todo(db: Session, todo_id: int):
         db.commit()
         db.refresh(todo)
     return todo
+
+def create_user(db, user):
+    hashed = get_password_hash(user.password)
+    db_user = models.User(username=user.username, password=hashed)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def get_user_by_username(db, username):
+    return db.query(models.User).filter(models.User.username == username).first()

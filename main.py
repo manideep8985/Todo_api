@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import models, schemas, crud
 from database import SessionLocal, engine
 from fastapi.responses import HTMLResponse
+from auth import verify_password, create_access_token
+from fastapi.security import OAuth2PasswordBearer
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -60,3 +62,27 @@ def ui():
     </body>
     </html>
     """
+
+@app.post("/signup")
+def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db, user.username)
+    if db_user:
+        raise HTTPException(status_code=400, detail="User exists")
+    return crud.create_user(db, user)
+
+
+@app.post("/login")
+def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db, user.username)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User not found")
+
+    if not verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=400, detail="Wrong password")
+
+    token = create_access_token({"sub": user.username})
+    return {"access_token": token}
+
+@app.get("/test")
+def test():
+    return {"message": "branch working"}
