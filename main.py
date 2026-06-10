@@ -86,3 +86,8 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
 @app.get("/test")
 def test():
     return {"message": "branch working"}
+
+@app.get("/priority-test")
+def priority_test():
+    return {"message": "priority added"}
+
